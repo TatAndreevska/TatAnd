@@ -4,6 +4,14 @@ export type EvidenceType='supplier_tds'|'supplier_declaration'|'laboratory_repor
 export type EvidenceStatus='unreviewed'|'verified'|'rejected'|'expired'
 
 export async function listEvidence(){const {data,error}=await supabase.from('evidence_records').select('evidence_id,related_request_id,related_product_id,related_product_version_id,evidence_type,title,issuer,reference_number,issue_date,valid_until,storage_path,sha256,verification_status,verified_at,created_at').order('created_at',{ascending:false});if(error)throw error;return data||[]}
+export async function listEvidenceScopeOptions(){
+ const [{data:requests,error:rErr},{data:products,error:pErr},{data:versions,error:vErr}]=await Promise.all([
+  supabase.from('documentation_requests').select('request_id,request_number,product_description,linked_product_id').in('request_status',['submitted','under_review','approved','issued']).order('updated_at',{ascending:false}),
+  supabase.from('products').select('product_id,sku_code,product_name,status').eq('status','active').order('product_name'),
+  supabase.from('product_versions').select('product_version_id,product_id,version_no,product_name,approved_at').order('created_at',{ascending:false})
+ ])
+ if(rErr)throw rErr;if(pErr)throw pErr;if(vErr)throw vErr;return {requests:requests||[],products:products||[],versions:versions||[]}
+}
 
 export async function uploadEvidence(args:{file:File;creatorProfileId:string;relatedRequestId?:string|null;relatedProductId?:string|null;relatedProductVersionId?:string|null;evidenceType:EvidenceType;title:string;issuer?:string;referenceNumber?:string;issueDate?:string;validUntil?:string}){
  const safeName=args.file.name.replace(/[^a-zA-Z0-9._-]+/g,'_');const storagePath=`evidence/${crypto.randomUUID()}/${safeName}`
