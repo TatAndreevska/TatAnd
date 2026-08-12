@@ -1,0 +1,6 @@
+import {supabase} from './supabase'
+export async function startReview(requestId:string){const {data,error}=await supabase.rpc('start_request_review',{target_request_id:requestId});if(error)throw error;return data}
+export async function linkProduct(requestId:string,productId:string){const {data,error}=await supabase.rpc('link_request_product',{target_request_id:requestId,target_product_id:productId});if(error)throw error;return data}
+export async function approveRequest(requestId:string){const {data,error}=await supabase.rpc('approve_documentation_request',{target_request_id:requestId});if(error)throw error;return data}
+export async function listProducts(){const {data,error}=await supabase.from('products').select('product_id,sku_code,product_name,product_type,status,current_version_no').eq('status','active').order('product_name');if(error)throw error;return data||[]}
+export async function listProductVersions(productId:string){const {data,error}=await supabase.from('product_versions').select('product_version_id,product_id,version_no,product_name,product_type,material_code,primary_material,approved_at').eq('product_id',productId).order('version_no',{ascending:false});if(error)throw error;return data||[]}
