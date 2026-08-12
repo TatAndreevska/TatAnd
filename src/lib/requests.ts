@@ -7,7 +7,8 @@ export async function createRequest(ownerOrganizationId:string,creatorProfileId:
  if(error) throw error
  return data
 }
-export async function saveDraft(requestId:string,draft:RequestDraft){
+export async function saveDraft(requestId:string,draft:RequestDraft|null){
+ if(!draft) throw new Error('Draft data is not available.')
  const {data,error}=await supabase.rpc('update_draft_documentation_request',{target_request_id:requestId,patch:normalizeDraft(draft)})
  if(error) throw error
  return data
